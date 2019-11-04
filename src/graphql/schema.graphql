@@ -1,0 +1,838 @@
+const typeDefs = `
+  scalar DateTime
+
+  type User {
+    uuid: String!
+    firstName: String!
+    lastName: String!
+    email: String!
+    role: String
+    lastLoginTimestamp: DateTime
+    createdAt: DateTime
+    agent: Agent
+    customer: Customer
+    admin: Admin
+    forgotPasswordToken: String
+    updatedAt: DateTime
+  }
+
+  type Customer {
+    profilePicURL: String
+    interest: String
+    likedProperties: [String]!
+    updatedBy: User
+  }
+
+  type Agent {
+    agentType: String
+    state: String
+    areaOfFocus: [String]
+    profilePicURL: String
+    branch: String
+    mobileNumber: String
+    officeNumber: String
+    realEstateLicenseNumber: String
+    ACHAccountNumber: String
+    ACHAccountBankRoutingNumber: String
+    title: String
+    facebook: String
+    twitter: String
+    instagram: String
+    profileDescription: String
+    createdByID: String
+    createdByName: String
+    updatedBy: User
+  }
+
+  type Admin {
+    mobileNumber: String!
+    officeNumber: String!
+    createdByID: String
+    createdByName: String
+    state: String
+    branch: String
+    isAdminOwner: Boolean
+    updatedBy: Admin
+  }
+
+  type Listing {
+    listingID: String!
+    address: String!
+    agentID: String!
+    agentName: String!
+    price:String!
+    featuredImage: String
+    images: [String]
+    description: String!
+    createdBy: Agent
+    updatedAt: DateTime
+    updatedBy: User
+  }
+
+  type Deal {
+    dealID: String!
+    date: DateTime!
+    agentID: String!
+    agentName: String!
+    agentRealEstateLicenseNumber: String!
+    agentType: String!
+    leadSource: String
+    dealType: String!
+    propertyAddress: String!
+    state: String!
+    city: String!
+    branch: String!
+    apartmentNumber: String!
+    managementOrCobrokeCompany: String!
+    price: String!
+    clientName: String!
+    clientEmail: String!
+    paymentItems: [DealPaymentItem!]!
+    coBrokeringAgentPaymentTypes: [CoBrokeringDealPaymentType!]
+    paymentsTotal: Float!
+    deductionItems: [DealDeductionItem]!
+    deductionsTotal: Float!
+    total: Float!
+    agentNotes: String
+    agencyDisclosureForm: String!
+    contractOrLeaseForms: [String]!
+    agentPaymentType: String!
+    fundsPaidBy: String!
+    alreadyTurnedFundsIn: String!
+    shouldSendApprovalTextMessageNotification: String!
+    status: String!
+    updatedAt: DateTime
+    bonusPercentageAddedByAdmin: Float
+    ACHAccountNumber: String
+    ACHAccountBankRoutingNumber: String
+    netAgentCommission: Float
+    netCompanyCommission: Float
+    acceptedAt: DateTime
+    isCoAgent: Boolean
+  }
+
+  type CoBrokeringDealPaymentType {
+    agentID: String!
+    agentPaymentType: String
+    ACHAccountNumber: String
+    ACHAccountBankRoutingNumber: String
+    status: String!
+  }
+
+  input CoBrokeringDealPaymentTypeInput {
+    agentID: String
+    agentPaymentType: String
+    ACHAccountNumber: String
+    ACHAccountBankRoutingNumber: String
+    status: String
+  }
+
+  type DealPaymentItem {
+    paymentType: String!
+    checkOrTransactionNumber: String!
+    amount: Float!
+  }
+
+  type DealDeductionItem {
+    deductionType: String!
+    agentID: String
+    agentName: String
+    description: String!
+    amount: Float!
+  }
+
+  type Invoice {
+    invoiceID: String!
+    date: DateTime!
+    agentName: String!
+    agentID: String!
+    agentRealEstateLicenseNumber: String!
+    agentType: String!
+    invoiceType: String!
+    propertyAddress: String!
+    state: String!
+    city: String!
+    branch: String!
+    apartmentNumber: String!
+    managementOrCobrokeCompany: String!
+    price: String!
+    clientName: String!
+    paymentItems: [DealPaymentItem!]!
+    total: Float!
+    agentNotes: String
+    attention: String!
+    attentionEmail: String!
+    updatedAt: DateTime
+  }
+
+  type Company {
+    news: String
+    alerts: String
+    formSelectItems: FormSelectItems!
+  }
+
+  type FormSelectItems {
+    managementOrCobrokeCompanies: [ManagementOrCobrokeCompany]
+  }
+
+  type NewsAlertItem {
+    uuid: String!
+    html: String!
+    string: String!
+    type: String!
+    createdAt: DateTime!
+  }
+
+  type ManagementOrCobrokeCompany {
+    name: String!
+    addedByAgentName: String!
+    addedByAgentID: String!
+    createdAt: DateTime!
+  }
+
+  type AgentsOfTheQuarter {
+    commercialDollarsAgent: AgentOfTheQuarter!
+    residentialDollarsAgent: AgentOfTheQuarter!
+    rentalsDollarsAgent: AgentOfTheQuarter!
+    numbersAgent: AgentOfTheQuarter!
+  }
+
+  type AgentOfTheQuarter {
+    type: String!
+    statItem: Float!
+    uuid: String
+    name: String
+    photoURL: String
+  }
+
+  type Query {
+    customer(uuid: String!): User
+    customers: [User]!
+    agent(uuid: String!): User
+    agents: [User]!
+    admin(uuid: String!): User
+    allAdmin: [User]!
+
+    newsAlertItems: [NewsAlertItem]!
+
+    dealForm(uuid: String): DealFormQueryReturn!
+    viewDealForm(uuid: String, userId: String): ViewDealFormQueryReturn!
+    viewInvoiceForm(uuid: String): ViewInvoiceFormQueryReturn!
+    viewListingForm(uuid: String): ViewListingFormQueryReturn!
+
+    agentsOfTheQuarter: AgentsOfTheQuarter!
+
+    deal(uuid: String!): Deal
+    allDeals: [Deal]!
+    allDealsByDateRange(input: QueryDateRangeDealsInput!): [Deal]!
+    allDealsByAgentName(agentName: String!): [Deal]!
+    allDealsByClientName(clientName: String!): [Deal]!
+    dealsByAgentID(uuid: String!): [Deal]!
+    dealsByAgentRealEstateLicenseNumber(agentRealEstateLicenseNumber: String!): [Deal]!
+
+    invoice(uuid: String): Invoice
+    allInvoices: [Invoice]!
+    allInvoicesByDateRange(input: QueryDateRangeDealsInput!): [Invoice]!
+    allInvoicesByAgentName(agentName: String!): [Invoice]!
+    allInvoicesByClientName(clientName: String!): [Invoice]!
+    invoicesByAgentID(uuid: String!): [Invoice]!
+    invoicesByAgentRealEstateLicenseNumber(agentRealEstateLicenseNumber: String!): [Invoice]!
+
+    listing(uuid: String): Listing
+    allListings: [Listing]!
+    allListingsByAgentID(uuid: String!): [Listing]!
+    allListingsByAgentName(agentName: String!): [Listing]!
+
+
+  }
+
+  type Mutation {
+    createAgent(input: CreateAgentInput!): CreateAgentReturn!
+    editAgentPassword(input: EditPasswordInput!): EditPasswordReturn!
+    updateAgent(input: UpdateAgentInput!): UpdateAgentReturn!
+    deleteAgent(uuid: String!): DeleteAgentReturn!
+    createAdmin(input: CreateAdminInput!): CreateAdminReturn!
+    updateAdmin(input: UpdateAdminInput!): CreateAdminReturn!
+    editAdminPassword(input: EditPasswordInput!): EditPasswordReturn!
+    deleteAdmin(uuid: String!): DeleteAdminReturn!
+    setAgentProfilePic(input: SetAgentProfilePicInput!): SetAgentProfilePicReturn!
+    registerCustomer(input: RegisterCustomerInput!): RegisterCustomerReturn!
+    loginUser(input: LoginUserInput!): LoginUserReturn!
+    logoutUser: LogoutUserReturn!
+
+    userForgotPassword(email: String!): UserForgotPasswordReturn!
+    resetPassword(input: ResetPasswordInput!): ResetPasswordReturn!
+
+    submitNewsAlertItem(input: SubmitNewsAlertItemInput): SubmitNewsAlertItemReturn!
+    deleteNewsAlertItem(uuid: String!): DeleteNewsAlertItemReturn!
+
+    getProfilePicSignedURL(input: getProfilePicSignedURLInput!): getProfilePicSignedURLReturn!
+
+    getDealFileUploadsSignedURLS(input: GetSignedURLSInput!): GetSignedURLSReturn!
+
+    submitDeal(input: SubmitDealInput!): SubmitDealReturn!
+
+    updateDeal(input: UpdateDealInput!): SubmitDealReturn!
+
+    acceptDeal(input: AcceptDealInput!): AcceptDealReturn!
+
+    deleteDeal(uuid: String!, userUUID: String): DeleteDealReturn!
+
+    submitInvoice(input: SubmitInvoiceInput!): SubmitInvoiceReturn!
+
+    updateInvoice(input: UpdateInvoiceInput!): SubmitInvoiceReturn!
+
+    deleteInvoice(uuid: String!): DeleteInvoiceReturn!
+
+    createListing(input: CreateListingInput!): CreateListingReturn!
+
+    updateListing(input: UpdateListingInput!): CreateListingReturn!
+
+    deleteListing(uuid: String!): DeleteListingReturn!
+  }
+
+  input ResetPasswordInput {
+    forgotPasswordToken: String!
+    password: String!
+  }
+
+  type ResetPasswordReturn {
+    wasSuccessful: Boolean!
+    userErrors: [UserError]!
+  }
+
+  type UserForgotPasswordReturn {
+    wasSuccessful: Boolean!
+    userErrors: [UserError]!
+  }
+
+  type DealFormQueryReturn {
+    agent: User
+    agents: [User]!
+    formSelectItems: [String]!
+  }
+
+  type ViewDealFormQueryReturn {
+    deal: Deal
+    agents: [User]
+    formSelectItems: [String]
+    error: String
+  }
+
+  type ViewInvoiceFormQueryReturn {
+    invoice: Invoice
+    formSelectItems: [String]
+    error: String
+  }
+
+  type ViewListingFormQueryReturn {
+    listing: Listing
+    formSelectItems: [String]
+    error: String
+  }
+
+  type DeleteNewsAlertItemReturn {
+    error: String
+  }
+
+  input SubmitNewsAlertItemInput {
+    html: String!
+    string: String!
+    type: String!
+  }
+
+
+  type SubmitNewsAlertItemReturn {
+    item: SubmitNewsAlertReturnItem
+    error: String
+  }
+
+  type SubmitNewsAlertReturnItem {
+    uuid: String!
+    html: String!
+    string: String!
+    type: String!
+    createdAt: String!
+  }
+
+  input UpdateAdminInput {
+    uuid: String!
+    firstName: String!
+    lastName: String!
+    email: String!
+    state: String!
+    officeNumber: String!
+    mobileNumber: String!
+    branch: String!
+    role: String!
+  }
+
+  type DeleteAgentReturn {
+    error: String
+  }
+
+  type DeleteAdminReturn {
+    error: String
+  }
+
+  input UpdateAgentInput {
+    uuid: String!
+    firstName: String
+    lastName: String
+    email: String
+    agentType: String
+    state: String
+    realEstateLicenseNumber: String
+    officeNumber: String
+    mobileNumber: String
+    areaOfFocus: [String]
+    branch: String!
+    fileName: String
+    fileType: String
+    title: String
+    facebook: String
+    twitter: String
+    instagram: String
+    ACHAccountNumber: String
+    ACHAccountBankRoutingNumber: String
+    profileDescription: String
+  }
+
+  type UpdateAgentReturn {
+    agent: User
+    wasSuccessful: Boolean!
+    userErrors: [UserError]!
+    otherError: String
+  }
+
+  input EditPasswordInput {
+    uuid: String!
+    newPassword: String!
+  }
+
+  type EditPasswordReturn {
+    userErrors: [UserError]!
+    otherError: String
+  }
+
+  input CreateAdminInput {
+    firstName: String!
+    lastName: String!
+    email: String!
+    state: String!
+    officeNumber: String!
+    mobileNumber: String!
+    temporaryPassword: String!
+    branch: String!
+    role: String!
+  }
+
+  type CreateAdminReturn {
+    admin: User
+    wasSuccessful: Boolean!
+    userErrors: [UserError]!
+    otherError: String
+  }
+
+  input AcceptDealInput {
+    uuid: String!
+    bonusPercentageAddedByAdmin: Float
+    userUUID: String
+  }
+
+  input QueryDateRangeDealsInput {
+    startDate: DateTime!
+    endDate: DateTime!
+  }
+
+  type DeleteDealReturn {
+    dealID: String
+    error: String
+  }
+
+  type DeleteInvoiceReturn {
+    invoiceID: String
+    error: String
+  }
+
+  type DeleteListingReturn {
+    listingID: String
+    error: String
+  }
+
+  input getProfilePicSignedURLInput {
+    fileName: String!
+    fileType: String!
+    uuid: String!
+  }
+
+  type getProfilePicSignedURLReturn {
+    item: [ReturnSignedURLItem!]
+    error: String
+  }
+
+  input SubmitInvoiceInput {
+    invoiceType: String!
+    propertyAddress: String!
+    city: String!
+    apartmentNumber: String!
+    managementOrCobrokeCompany: String!
+    price: String!
+    clientName: String!
+    paymentItems: [PaymentItem!]!
+    total: Float!
+    agentNotes: String
+    attention: String!
+    attentionEmail: String!
+    addedManagementCompanies: [String]!
+  }
+
+  input UpdateInvoiceInput {
+    invoiceID: String!
+    invoiceType: String!
+    propertyAddress: String!
+    city: String!
+    apartmentNumber: String!
+    managementOrCobrokeCompany: String!
+    price: String!
+    clientName: String!
+    paymentItems: [PaymentItem!]!
+    total: Float!
+    agentNotes: String
+    attention: String!
+    attentionEmail: String!
+    addedManagementCompanies: [String]!
+  }
+
+  type SubmitInvoiceReturn {
+    invoice: InvoiceReturnItem
+    userErrors: [UserError]!
+    otherError: String
+  }
+
+  type InvoiceReturnItem {
+    invoiceID: String!
+    date: DateTime!
+    agentName: String!
+    agentID: String!
+    agentRealEstateLicenseNumber: String!
+    agentType: String!
+    invoiceType: String!
+    propertyAddress: String!
+    state: String!
+    city: String!
+    apartmentNumber: String!
+    managementOrCobrokeCompany: String!
+    price: String!
+    clientName: String!
+    paymentItems: [DealPaymentItem!]!
+    total: Float!
+    agentNotes: String
+    attention: String!
+    attentionEmail: String!
+    updatedAt: DateTime
+  }
+
+input CreateListingInput {
+    address: String!     
+    description :String       
+    price:String
+  }
+
+  input UpdateListingInput {
+    ListingID : String!
+    address: String!   
+    description :String       
+    price:String
+  }
+
+  type CreateListingReturn {
+    listing: ListingReturnItem
+    userErrors: [UserError]!
+    otherError: String
+  }
+
+  type ListingReturnItem {
+    listingID: String!
+    agentName: String!
+    agentID: String!
+    address: String!
+    price:  String!
+    featuredImage: String
+    images:  [String]   
+    description:String
+    createdBy: String    
+    updatedBy: String
+    updatedAt: DateTime
+    
+  }
+
+  input SubmitDealInput {
+    dealID: String!
+    leadSource: String
+    dealType: String!
+    propertyAddress: String!
+    city: String!
+    apartmentNumber: String!
+    managementOrCobrokeCompany: String!
+    price: String!
+    clientName: String!
+    clientEmail: String!
+    paymentItems: [PaymentItem!]!
+    coBrokeringAgentPaymentTypes: [CoBrokeringDealPaymentTypeInput]
+    paymentsTotal: Float!
+    deductionItems: [DeductionItem]!
+    deductionsTotal: Float!
+    total: Float!
+    agentNotes: String
+    agencyDisclosureForm: String!
+    contractOrLeaseForms: [String]!
+    agentPaymentType: String!
+    fundsPaidBy: String!
+    alreadyTurnedFundsIn: String!
+    shouldSendApprovalTextMessageNotification: String!
+    addedManagementCompanies: [String]!
+    ACHAccountNumber: String
+    ACHAccountBankRoutingNumber: String
+  }
+
+  input UpdateDealInput {
+    dealID: String!
+    leadSource: String
+    dealType: String!
+    propertyAddress: String!
+    city: String!
+    apartmentNumber: String!
+    managementOrCobrokeCompany: String!
+    price: String!
+    clientName: String!
+    clientEmail: String!
+    paymentItems: [PaymentItem!]!
+    coBrokeringAgentPaymentTypes: [CoBrokeringDealPaymentTypeInput]
+    paymentsTotal: Float!
+    deductionItems: [DeductionItem]!
+    deductionsTotal: Float!
+    total: Float!
+    agentNotes: String
+    agencyDisclosureForm: String
+    contractOrLeaseForms: [String]!
+    agentPaymentType: String!
+    fundsPaidBy: String!
+    alreadyTurnedFundsIn: String!
+    shouldSendApprovalTextMessageNotification: String!
+    addedManagementCompanies: [String]!
+    ACHAccountNumber: String
+    ACHAccountBankRoutingNumber: String
+  }
+
+  input PaymentItem {
+    paymentType: String!
+    checkOrTransactionNumber: String!
+    amount: Float!
+  }
+
+  input DeductionItem {
+    deductionType: String!
+    agentID: String
+    agentName: String
+    description: String!
+    amount: Float!
+  }
+
+  type SubmitDealReturn {
+    deal: DealReturnItem
+    userErrors: [UserError]!
+    otherError: String
+  }
+
+  type AcceptDealReturn {
+    deal: AcceptDealReturnItem
+    userErrors: [UserError]!
+    otherError: String
+  }
+
+  type DealReturnItem {
+    dealID: String!
+    date: DateTime!
+    agentID: String!
+    agentName: String!
+    agentRealEstateLicenseNumber: String!
+    agentType: String!
+    leadSource: String
+    dealType: String!
+    propertyAddress: String!
+    state: String!
+    city: String!
+    apartmentNumber: String!
+    managementOrCobrokeCompany: String!
+    price: String!
+    clientName: String!
+    clientEmail: String!
+    paymentItems: [DealPaymentItem!]!
+    coBrokeringAgentPaymentTypes: [CoBrokeringDealPaymentType!]
+    paymentsTotal: Float!
+    deductionItems: [DealDeductionItem]!
+    deductionsTotal: Float!
+    total: Float!
+    agentNotes: String
+    agencyDisclosureForm: String!
+    contractOrLeaseForms: [String]!
+    agentPaymentType: String!
+    fundsPaidBy: String!
+    alreadyTurnedFundsIn: String!
+    shouldSendApprovalTextMessageNotification: String!
+    ACHAccountNumber: String
+    ACHAccountBankRoutingNumber: String
+    status: String!
+    updatedAt: DateTime
+    acceptedAt: DateTime
+    bonusPercentageAddedByAdmin: Float
+    netAgentCommission: Float
+  }
+
+  type AcceptDealReturnItem {
+    dealID: String!
+    date: DateTime!
+    agentID: String!
+    agentName: String!
+    agentRealEstateLicenseNumber: String!
+    agentType: String!
+    leadSource: String
+    dealType: String!
+    propertyAddress: String!
+    state: String!
+    city: String!
+    apartmentNumber: String!
+    managementOrCobrokeCompany: String!
+    price: String!
+    clientName: String!
+    clientEmail: String!
+    paymentItems: [DealPaymentItem!]!
+    coBrokeringAgentPaymentTypes: [CoBrokeringDealPaymentType!]
+    paymentsTotal: Float!
+    deductionItems: [DealDeductionItem]!
+    deductionsTotal: Float!
+    total: Float!
+    agentNotes: String
+    agencyDisclosureForm: String!
+    contractOrLeaseForms: [String]!
+    agentPaymentType: String!
+    fundsPaidBy: String!
+    alreadyTurnedFundsIn: String!
+    shouldSendApprovalTextMessageNotification: String!
+    ACHAccountNumber: String
+    ACHAccountBankRoutingNumber: String
+    status: String!
+    updatedAt: DateTime
+    acceptedAt: DateTime
+    bonusPercentageAddedByAdmin: Float
+    netAgentCommission: Float
+    netCompanyCommission: Float
+  }
+
+  input GetSignedURLSInputItems {
+    itemName: String!
+    fileName: String!
+    fileType: String!
+  }
+
+  input GetSignedURLSInput {
+    items: [GetSignedURLSInputItems!]!,
+    dealID: String
+  }
+
+  type ReturnSignedURLItem {
+    itemName: String
+    fileName: String!
+    signedURL: String
+    uuid: String
+    error: String
+  }
+
+  type GetSignedURLSReturn {
+    dealID: String!
+    items: [ReturnSignedURLItem!]
+    error: String
+  }
+
+  input SetAgentProfilePicInput {
+    agentID: String!
+    fileName: String
+  }
+
+  type SetAgentProfilePicReturn {
+    url: String
+    wasSuccessful: Boolean!
+    otherError: String
+    userErrors: [UserError]!
+  }
+
+  input CreateAgentInput {
+    firstName: String!
+    lastName: String!
+    email: String!
+    agentType: String!
+    state: String!
+    realEstateLicenseNumber: String!
+    officeNumber: String
+    mobileNumber: String!
+    temporaryPassword: String!
+    areaOfFocus: [String]
+    branch: String!
+    title: String
+    fileName: String
+    fileType: String
+    ACHAccountNumber: String
+    ACHAccountBankRoutingNumber: String
+    facebook: String
+    twitter: String
+    instagram: String
+    profileDescription: String
+  }
+
+  type CreateAgentReturn {
+    agent: User
+    signedURL: String
+    wasSuccessful: Boolean!
+    userErrors: [UserError]!
+    otherError: String
+  }
+
+  input LoginUserInput {
+    email: String!
+    password: String!
+  }
+
+  type LoginUserReturn {
+    user: User
+    wasSuccessful: Boolean!
+    userErrors: [UserError]!
+    otherError: String
+  }
+
+  type LogoutUserReturn {
+    wasSuccessful: Boolean!
+    userError: String
+  }
+
+  input RegisterCustomerInput {
+    firstName: String!
+    lastName: String!
+    email: String!
+    password: String!
+  }
+
+  type RegisterCustomerReturn {
+    customer: Customer
+    wasSuccessful: Boolean!
+    userErrors: [UserError]!
+    otherError: String
+  }
+
+  type UserError {
+    field: String!
+    message: String!
+  }
+`;
+
+module.exports = typeDefs;
